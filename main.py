@@ -57,6 +57,43 @@ def check_args(args):
         print('batch size must be larger than or equal to one')
     return args
 
+def get_gan():
+    # parse arguments
+    args = parse_args()
+    if args is None:
+      exit()
+
+    # open session
+    with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
+
+        gan = StyleGAN(sess, args)
+        # build graph
+        gan.build_model()
+
+        # show network architecture
+        show_all_variables()
+        tf.global_variables_initializer().run()
+
+        gan.saver = tf.train.Saver()
+        could_load, checkpoint_counter = gan.load(self.checkpoint_dir)
+        result_dir = os.path.join(gan.result_dir, gan.model_dir)
+
+        if could_load:
+            print(" [*] Load SUCCESS")
+        else:
+            print(" [!] Load failed...")
+
+        image_frame_dim = int(np.floor(np.sqrt(1)))
+        seed = np.random.randint(low=0, high=10000)
+        test_z = tf.cast(np.random.RandomState(seed).normal(size=[gan.batch_size, gan.z_dim]), tf.float32)
+        alpha = tf.constant(0.0, dtype=tf.float32, shape=[])
+        gan.fake_images = gan.generator(test_z, alpha=alpha, target_img_size=gan.img_size, is_training=False)
+        samples = gan.sess.run(gan.fake_images)
+
+        save_images(samples[:image_frame_dim * image_frame_dim, :, :, :], [image_frame_dim, image_frame_dim],
+                            '{}/test_fake_img_{}_{}_{}.jpg'.format(result_dir, self.img_size, i, seed))
+        return gan
+
 
 """main"""
 def main():
