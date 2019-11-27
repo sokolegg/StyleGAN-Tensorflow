@@ -34,7 +34,7 @@ def parse_args():
     parser.add_argument('--sample_dir', type=str, default='samples',
                         help='Directory name to save the samples on training')
 
-    return parser.parse_known_args()[0].__dict__
+    return parser.parse_known_args()[0]
 
 """checking arguments"""
 def check_args(args):
